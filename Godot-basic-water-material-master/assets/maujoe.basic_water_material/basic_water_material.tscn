@@ -1,0 +1,163 @@
+[gd_scene load_steps=19 format=2]
+
+[ext_resource path="res://assets/maujoe.basic_water_material/models/terrain.tscn" type="PackedScene" id=1]
+[ext_resource path="res://assets/maujoe.basic_water_material/textures/cloud_layers_1k.hdr" type="Texture" id=2]
+[ext_resource path="res://assets/maujoe.basic_water_material/materials/basic_water_material.material" type="Material" id=3]
+[ext_resource path="res://assets/maujoe.basic_water_material/brick/1K-brick_wall_7_roughness.jpg" type="Texture" id=4]
+[ext_resource path="res://assets/maujoe.basic_water_material/brick/1K-brick_wall_7_normal.jpg" type="Texture" id=5]
+[ext_resource path="res://assets/maujoe.basic_water_material/brick/1K-brick_wall_7_height.jpg" type="Texture" id=6]
+[ext_resource path="res://assets/maujoe.basic_water_material/brick/1K-brick_wall_7_baseColor.jpg" type="Texture" id=7]
+
+[sub_resource type="PanoramaSky" id=1]
+radiance_size = 4
+panorama = ExtResource( 2 )
+
+[sub_resource type="Environment" id=2]
+background_mode = 2
+background_sky = SubResource( 1 )
+background_energy = 1.5
+fog_height_min = 0.0
+fog_height_max = 100.0
+ssao_quality = 0
+
+[sub_resource type="PlaneMesh" id=3]
+material = ExtResource( 3 )
+size = Vector2( 27.717, 30 )
+subdivide_width = 5
+subdivide_depth = 5
+center_offset = Vector3( 0, -1.187, 0 )
+
+[sub_resource type="Animation" id=4]
+resource_name = "uv_water"
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:mesh:material:uv1_offset")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0.2, 0.9 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Vector3( 0, 0, 0 ), Vector3( 1, 0, 0 ) ]
+}
+
+[sub_resource type="VisualShaderNodeTexture" id=6]
+texture = ExtResource( 7 )
+
+[sub_resource type="VisualShaderNodeTexture" id=7]
+texture = ExtResource( 4 )
+
+[sub_resource type="VisualShaderNodeTexture" id=8]
+texture = ExtResource( 5 )
+
+[sub_resource type="VisualShaderNodeTexture" id=9]
+texture = ExtResource( 6 )
+
+[sub_resource type="VisualShader" id=10]
+code = "shader_type spatial;
+render_mode specular_schlick_ggx;
+
+uniform sampler2D tex_frg_2;
+uniform sampler2D tex_frg_3;
+uniform sampler2D tex_frg_4;
+uniform sampler2D tex_frg_5;
+
+
+
+void vertex() {
+// Output:0
+
+}
+
+void fragment() {
+// Texture:2
+	vec4 tex_frg_2_read = texture(tex_frg_2, UV.xy);
+	vec3 n_out2p0 = tex_frg_2_read.rgb;
+	float n_out2p1 = tex_frg_2_read.a;
+
+// Texture:3
+	vec4 tex_frg_3_read = texture(tex_frg_3, UV.xy);
+	vec3 n_out3p0 = tex_frg_3_read.rgb;
+	float n_out3p1 = tex_frg_3_read.a;
+
+// Texture:4
+	vec4 tex_frg_4_read = texture(tex_frg_4, UV.xy);
+	vec3 n_out4p0 = tex_frg_4_read.rgb;
+	float n_out4p1 = tex_frg_4_read.a;
+
+// Texture:5
+	vec4 tex_frg_5_read = texture(tex_frg_5, UV.xy);
+	vec3 n_out5p0 = tex_frg_5_read.rgb;
+	float n_out5p1 = tex_frg_5_read.a;
+
+// Output:0
+	ALBEDO = n_out2p0;
+	ROUGHNESS = dot(n_out3p0, vec3(0.333333, 0.333333, 0.333333));
+	NORMAL = n_out4p0;
+	NORMALMAP_DEPTH = dot(n_out5p0, vec3(0.333333, 0.333333, 0.333333));
+
+}
+
+void light() {
+// Output:0
+
+}
+"
+graph_offset = Vector2( 1.47876, 263 )
+nodes/fragment/0/position = Vector2( 400, 620 )
+nodes/fragment/2/node = SubResource( 6 )
+nodes/fragment/2/position = Vector2( 40, 80 )
+nodes/fragment/3/node = SubResource( 7 )
+nodes/fragment/3/position = Vector2( 40, 320 )
+nodes/fragment/4/node = SubResource( 8 )
+nodes/fragment/4/position = Vector2( 140, 560 )
+nodes/fragment/5/node = SubResource( 9 )
+nodes/fragment/5/position = Vector2( 100, 800 )
+nodes/fragment/connections = PoolIntArray( 2, 0, 0, 0, 3, 0, 0, 3, 4, 0, 0, 7, 5, 0, 0, 9 )
+
+[sub_resource type="ShaderMaterial" id=11]
+shader = SubResource( 10 )
+
+[sub_resource type="CapsuleMesh" id=5]
+material = SubResource( 11 )
+radius = 3.0
+mid_height = 27.474
+
+[node name="Node" type="Node"]
+
+[node name="terrain" parent="." instance=ExtResource( 1 )]
+transform = Transform( 1.98356, 0, 0, 0, 1.98356, 0, 0, 0, 1.98356, 0, 0, 0 )
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 0.821155, 0, -0.570705, 0, 1, 0, 0.570705, 0, 0.821155, -10.0408, 1.29057, 13.15 )
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( 2 )
+
+[node name="Water" type="MeshInstance" parent="."]
+transform = Transform( 1.56942, 0, 0, 0, 1.56942, 0, 0, 0, 1.56942, -4.58219, -0.655471, -2.37898 )
+mesh = SubResource( 3 )
+material/0 = null
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Water"]
+autoplay = "uv_water"
+playback_speed = 0.22
+anims/uv_water = SubResource( 4 )
+
+[node name="Room" type="Room" parent="."]
+
+[node name="Spatial" type="Spatial" parent="Room"]
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 8.09757, 14.7731, 8.58368 )
+mesh = SubResource( 5 )
+material/0 = null
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 0.999131, 0, -0.0416838, 0, 1, 0, 0.0416838, 0, 0.999131, -13.9358, 47.5281, -8.29785 )
+light_color = Color( 0.819608, 0.792157, 0.0509804, 1 )
+light_energy = 4.006
+shadow_enabled = true
+shadow_bias = 0.592
